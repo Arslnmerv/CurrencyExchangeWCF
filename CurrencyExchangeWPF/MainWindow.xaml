@@ -1,0 +1,71 @@
+﻿<Window x:Class="CurrencyExchangeWPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Currency Exchange Office" Height="500" Width="600">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Account Section -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,10">
+            <TextBlock Text="Account" FontSize="16" FontWeight="Bold" Margin="0,0,0,5"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBox x:Name="UsernameBox" Width="150" Margin="0,0,10,0"/>
+                <Button Content="Create Account" Click="CreateAccount_Click" Margin="0,0,10,0" Padding="10,5"/>
+                <Button Content="Load Balance" Click="LoadBalance_Click" Padding="10,5"/>
+            </StackPanel>
+            <TextBlock x:Name="BalanceText" Margin="0,5,0,0" FontSize="14"/>
+        </StackPanel>
+
+        <!-- Deposit Section -->
+        <StackPanel Grid.Row="1" Margin="0,0,0,10">
+            <TextBlock Text="Deposit PLN" FontSize="16" FontWeight="Bold" Margin="0,0,0,5"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBox x:Name="DepositBox" Width="150" Margin="0,0,10,0"/>
+                <Button Content="Deposit" Click="Deposit_Click" Padding="10,5"/>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Exchange Rate Section -->
+        <StackPanel Grid.Row="2" Margin="0,0,0,10">
+            <TextBlock Text="Exchange Rates" FontSize="16" FontWeight="Bold" Margin="0,0,0,5"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBox x:Name="CurrencyBox" Width="100" Margin="0,0,10,0"/>
+                <Button Content="Get Rate" Click="GetRate_Click" Margin="0,0,10,0" Padding="10,5"/>
+                <TextBlock x:Name="RateText" VerticalAlignment="Center" FontSize="14"/>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Buy Section -->
+        <StackPanel Grid.Row="3" Margin="0,0,0,10">
+            <TextBlock Text="Buy Currency" FontSize="16" FontWeight="Bold" Margin="0,0,0,5"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBox x:Name="BuyCurrencyBox" Width="100" Margin="0,0,10,0"/>
+                <TextBox x:Name="BuyAmountBox" Width="100" Margin="0,0,10,0"/>
+                <Button Content="Buy" Click="Buy_Click" Padding="10,5"/>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Sell Section -->
+        <StackPanel Grid.Row="4" Margin="0,0,0,10">
+            <TextBlock Text="Sell Currency" FontSize="16" FontWeight="Bold" Margin="0,0,0,5"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBox x:Name="SellCurrencyBox" Width="100" Margin="0,0,10,0"/>
+                <TextBox x:Name="SellAmountBox" Width="100" Margin="0,0,10,0"/>
+                <Button Content="Sell" Click="Sell_Click" Padding="10,5"/>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Log -->
+        <StackPanel Grid.Row="5">
+            <TextBlock Text="Log" FontSize="16" FontWeight="Bold" Margin="0,0,0,5"/>
+            <ListBox x:Name="LogBox" Height="120"/>
+        </StackPanel>
+    </Grid>
+</Window>

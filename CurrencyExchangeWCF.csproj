@@ -10,6 +10,10 @@
     <Content Remove="CurrencyExchangeClient\**" />
     <EmbeddedResource Remove="CurrencyExchangeClient\**" />
     <None Remove="CurrencyExchangeClient\**" />
+    <Compile Remove="CurrencyExchangeWPF\**" />
+    <Content Remove="CurrencyExchangeWPF\**" />
+    <EmbeddedResource Remove="CurrencyExchangeWPF\**" />
+    <None Remove="CurrencyExchangeWPF\**" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CoreWCF.Http" Version="1.8.0" />

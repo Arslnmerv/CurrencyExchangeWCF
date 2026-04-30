@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="CurrencyExchangeClient/CurrencyExchangeClient.csproj" />
   <Project Path="CurrencyExchangeWCF.csproj" />
+  <Project Path="CurrencyExchangeWPF/CurrencyExchangeWPF.csproj" />
 </Solution>
