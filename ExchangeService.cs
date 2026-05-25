@@ -1,4 +1,7 @@
-﻿namespace CurrencyExchangeWCF
+﻿using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
+
+namespace CurrencyExchangeWCF
 {
     public class ExchangeService : IExchangeService
     {
@@ -6,7 +9,15 @@
         private const decimal BuySpread = 0.02m;
         private const decimal SellSpread = 0.02m;
 
-        private static readonly Dictionary<string, UserAccount> _accounts = new();
+        private Dictionary<string, decimal> GetBalances(UserAccount account)
+        {
+            return JsonSerializer.Deserialize<Dictionary<string, decimal>>(account.CurrencyBalancesJson) ?? new();
+        }
+
+        private void SetBalances(UserAccount account, Dictionary<string, decimal> balances)
+        {
+            account.CurrencyBalancesJson = JsonSerializer.Serialize(balances);
+        }
 
         public async Task<decimal> GetExchangeRate(string currencyCode)
         {
@@ -16,15 +27,13 @@
         public async Task<decimal> BuyCurrency(string currencyCode, decimal amount)
         {
             var midRate = await _nbpClient.GetRateAsync(currencyCode);
-            var buyRate = midRate * (1 - BuySpread);
-            return amount * buyRate;
+            return amount * midRate * (1 - BuySpread);
         }
 
         public async Task<decimal> SellCurrency(string currencyCode, decimal amount)
         {
             var midRate = await _nbpClient.GetRateAsync(currencyCode);
-            var sellRate = midRate * (1 + SellSpread);
-            return amount * sellRate;
+            return amount * midRate * (1 + SellSpread);
         }
 
         public async Task<List<string>> GetAvailableCurrencies()
@@ -32,73 +41,105 @@
             return await _nbpClient.GetAvailableCurrenciesAsync();
         }
 
-        public Task<bool> CreateAccount(string username)
+        public async Task<bool> CreateAccount(string username)
         {
-            if (_accounts.ContainsKey(username))
-                return Task.FromResult(false);
-
-            _accounts[username] = new UserAccount { Username = username };
-            return Task.FromResult(true);
+            using var db = new AppDbContext();
+            await db.Database.EnsureCreatedAsync();
+            if (await db.Users.AnyAsync(u => u.Username == username))
+                return false;
+            db.Users.Add(new UserAccount { Username = username });
+            await db.SaveChangesAsync();
+            return true;
         }
 
-        public Task<bool> Deposit(string username, decimal amount)
+        public async Task<bool> Deposit(string username, decimal amount)
         {
-            if (!_accounts.TryGetValue(username, out var account))
-                return Task.FromResult(false);
-
+            using var db = new AppDbContext();
+            var account = await db.Users.FindAsync(username);
+            if (account == null) return false;
             account.PlnBalance += amount;
-            return Task.FromResult(true);
+            await db.SaveChangesAsync();
+            return true;
         }
 
-        public Task<decimal> GetPlnBalance(string username)
+        public async Task<decimal> GetPlnBalance(string username)
         {
-            if (!_accounts.TryGetValue(username, out var account))
-                return Task.FromResult(0m);
-
-            return Task.FromResult(account.PlnBalance);
+            using var db = new AppDbContext();
+            var account = await db.Users.FindAsync(username);
+            return account?.PlnBalance ?? 0;
         }
 
-        public Task<decimal> GetCurrencyBalance(string username, string currencyCode)
+        public async Task<decimal> GetCurrencyBalance(string username, string currencyCode)
         {
-            if (!_accounts.TryGetValue(username, out var account))
-                return Task.FromResult(0m);
-
-            account.CurrencyBalances.TryGetValue(currencyCode, out var balance);
-            return Task.FromResult(balance);
+            using var db = new AppDbContext();
+            var account = await db.Users.FindAsync(username);
+            if (account == null) return 0;
+            var balances = GetBalances(account);
+            balances.TryGetValue(currencyCode, out var balance);
+            return balance;
         }
 
         public async Task<bool> BuyCurrencyForUser(string username, string currencyCode, decimal amount)
         {
-            if (!_accounts.TryGetValue(username, out var account))
-                return false;
+            using var db = new AppDbContext();
+            var account = await db.Users.FindAsync(username);
+            if (account == null) return false;
 
             var midRate = await _nbpClient.GetRateAsync(currencyCode);
             var sellRate = midRate * (1 + SellSpread);
             var totalCost = amount * sellRate;
 
-            if (account.PlnBalance < totalCost)
-                return false;
+            if (account.PlnBalance < totalCost) return false;
 
             account.PlnBalance -= totalCost;
-            account.CurrencyBalances.TryGetValue(currencyCode, out var current);
-            account.CurrencyBalances[currencyCode] = current + amount;
+            var balances = GetBalances(account);
+            balances.TryGetValue(currencyCode, out var current);
+            balances[currencyCode] = current + amount;
+            SetBalances(account, balances);
+
+            db.Transactions.Add(new Transaction
+            {
+                Username = username,
+                Type = "BUY",
+                CurrencyCode = currencyCode,
+                Amount = amount,
+                Rate = sellRate,
+                PlnValue = totalCost
+            });
+
+            await db.SaveChangesAsync();
             return true;
         }
 
         public async Task<bool> SellCurrencyForUser(string username, string currencyCode, decimal amount)
         {
-            if (!_accounts.TryGetValue(username, out var account))
-                return false;
+            using var db = new AppDbContext();
+            var account = await db.Users.FindAsync(username);
+            if (account == null) return false;
 
-            account.CurrencyBalances.TryGetValue(currencyCode, out var currentBalance);
-            if (currentBalance < amount)
-                return false;
+            var balances = GetBalances(account);
+            balances.TryGetValue(currencyCode, out var currentBalance);
+            if (currentBalance < amount) return false;
 
             var midRate = await _nbpClient.GetRateAsync(currencyCode);
             var buyRate = midRate * (1 - BuySpread);
+            var plnReceived = amount * buyRate;
 
-            account.CurrencyBalances[currencyCode] = currentBalance - amount;
-            account.PlnBalance += amount * buyRate;
+            balances[currencyCode] = currentBalance - amount;
+            SetBalances(account, balances);
+            account.PlnBalance += plnReceived;
+
+            db.Transactions.Add(new Transaction
+            {
+                Username = username,
+                Type = "SELL",
+                CurrencyCode = currencyCode,
+                Amount = amount,
+                Rate = buyRate,
+                PlnValue = plnReceived
+            });
+
+            await db.SaveChangesAsync();
             return true;
         }
     }
