@@ -57,3 +57,5 @@ dotnet run
 | Lab 5-6 | Exchange office architecture and currency exchange logic | ✅ |
 | Lab 7 | NBP API integration (refined) | ✅ |
 | Lab 8 | WPF client application | ✅ |
+| Lab 9-10 | User account management and currency transactions | ✅ |
+| Lab 11-12 | Database integration with EF Core and SQLite | ✅ |
