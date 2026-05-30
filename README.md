@@ -59,3 +59,4 @@ dotnet run
 | Lab 8 | WPF client application | ✅ |
 | Lab 9-10 | User account management and currency transactions | ✅ |
 | Lab 11-12 | Database integration with EF Core and SQLite | ✅ |
+| Lab 13-14 | Historical exchange rates, reporting and final testing | ✅ |
