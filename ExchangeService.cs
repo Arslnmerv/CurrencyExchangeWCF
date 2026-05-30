@@ -142,5 +142,23 @@ namespace CurrencyExchangeWCF
             await db.SaveChangesAsync();
             return true;
         }
+
+        public async Task<decimal> GetHistoricalRate(string currencyCode, string date)
+        {
+            return await _nbpClient.GetHistoricalRateAsync(currencyCode, date);
+        }
+
+        public async Task<List<string>> GetTransactionHistory(string username)
+        {
+            using var db = new AppDbContext();
+            var transactions = await db.Transactions
+                .Where(t => t.Username == username)
+                .OrderByDescending(t => t.Timestamp)
+                .ToListAsync();
+
+            return transactions.Select(t =>
+                $"{t.Timestamp:yyyy-MM-dd HH:mm} | {t.Type} | {t.Amount} {t.CurrencyCode} | Rate: {t.Rate:F4} | PLN: {t.PlnValue:F2}"
+            ).ToList();
+        }
     }
 }

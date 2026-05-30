@@ -13,6 +13,8 @@ namespace CurrencyExchangeWPF
         [OperationContract] System.Threading.Tasks.Task<decimal> GetCurrencyBalance(string username, string currencyCode);
         [OperationContract] System.Threading.Tasks.Task<bool> BuyCurrencyForUser(string username, string currencyCode, decimal amount);
         [OperationContract] System.Threading.Tasks.Task<bool> SellCurrencyForUser(string username, string currencyCode, decimal amount);
+        [OperationContract] System.Threading.Tasks.Task<decimal> GetHistoricalRate(string currencyCode, string date);
+        [OperationContract] System.Threading.Tasks.Task<System.Collections.Generic.List<string>> GetTransactionHistory(string username);
     }
 
     public partial class MainWindow : Window
@@ -72,6 +74,23 @@ namespace CurrencyExchangeWPF
             Log($"Rate for {currency}: {rate:F4} PLN");
         }
 
+        private async void GetHistorical_Click(object sender, RoutedEventArgs e)
+        {
+            var currency = HistCurrencyBox.Text.Trim().ToUpper();
+            var date = HistDateBox.Text.Trim();
+            if (string.IsNullOrEmpty(currency) || string.IsNullOrEmpty(date)) return;
+            try
+            {
+                var rate = await _client.GetHistoricalRate(currency, date);
+                HistRateText.Text = $"1 {currency} = {rate:F4} PLN on {date}";
+                Log($"Historical rate for {currency} on {date}: {rate:F4} PLN");
+            }
+            catch
+            {
+                Log($"Could not get historical rate for {currency} on {date}.");
+            }
+        }
+
         private async void Buy_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(_username)) { Log("No account selected."); return; }
@@ -100,6 +119,16 @@ namespace CurrencyExchangeWPF
                 BalanceText.Text = $"PLN Balance: {balance:F2}";
             }
             else Log("Sale failed. Check currency balance.");
+        }
+
+        private async void LoadHistory_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(_username)) { Log("No account selected."); return; }
+            var history = await _client.GetTransactionHistory(_username);
+            HistoryBox.Items.Clear();
+            foreach (var item in history)
+                HistoryBox.Items.Add(item);
+            Log($"Loaded {history.Count} transactions.");
         }
     }
 }

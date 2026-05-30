@@ -1,9 +1,12 @@
 ﻿<Window x:Class="CurrencyExchangeWPF.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Currency Exchange Office" Height="500" Width="600">
+        Title="Currency Exchange Office" Height="700" Width="600">
+    <ScrollViewer>
     <Grid Margin="20">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -42,8 +45,20 @@
             </StackPanel>
         </StackPanel>
 
-        <!-- Buy Section -->
+        <!-- Historical Rate Section -->
         <StackPanel Grid.Row="3" Margin="0,0,0,10">
+            <TextBlock Text="Historical Rate" FontSize="16" FontWeight="Bold" Margin="0,0,0,5"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBox x:Name="HistCurrencyBox" Width="100" Margin="0,0,10,0"/>
+                <TextBox x:Name="HistDateBox" Width="120" Margin="0,0,10,0"/>
+                <Button Content="Get Historical" Click="GetHistorical_Click" Padding="10,5"/>
+            </StackPanel>
+            <TextBlock Text="Date format: YYYY-MM-DD" FontSize="11" Foreground="Gray"/>
+            <TextBlock x:Name="HistRateText" Margin="0,5,0,0" FontSize="14"/>
+        </StackPanel>
+
+        <!-- Buy Section -->
+        <StackPanel Grid.Row="4" Margin="0,0,0,10">
             <TextBlock Text="Buy Currency" FontSize="16" FontWeight="Bold" Margin="0,0,0,5"/>
             <StackPanel Orientation="Horizontal">
                 <TextBox x:Name="BuyCurrencyBox" Width="100" Margin="0,0,10,0"/>
@@ -53,7 +68,7 @@
         </StackPanel>
 
         <!-- Sell Section -->
-        <StackPanel Grid.Row="4" Margin="0,0,0,10">
+        <StackPanel Grid.Row="5" Margin="0,0,0,10">
             <TextBlock Text="Sell Currency" FontSize="16" FontWeight="Bold" Margin="0,0,0,5"/>
             <StackPanel Orientation="Horizontal">
                 <TextBox x:Name="SellCurrencyBox" Width="100" Margin="0,0,10,0"/>
@@ -62,10 +77,20 @@
             </StackPanel>
         </StackPanel>
 
+        <!-- Transaction History -->
+        <StackPanel Grid.Row="6" Margin="0,0,0,10">
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                <TextBlock Text="Transaction History" FontSize="16" FontWeight="Bold" Margin="0,0,10,0"/>
+                <Button Content="Load History" Click="LoadHistory_Click" Padding="10,5"/>
+            </StackPanel>
+            <ListBox x:Name="HistoryBox" Height="80"/>
+        </StackPanel>
+
         <!-- Log -->
-        <StackPanel Grid.Row="5">
+        <StackPanel Grid.Row="7">
             <TextBlock Text="Log" FontSize="16" FontWeight="Bold" Margin="0,0,0,5"/>
-            <ListBox x:Name="LogBox" Height="120"/>
+            <ListBox x:Name="LogBox" Height="100"/>
         </StackPanel>
     </Grid>
+    </ScrollViewer>
 </Window>
